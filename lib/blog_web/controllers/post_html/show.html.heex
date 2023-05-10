@@ -16,15 +16,29 @@
 
 <.simple_form :let={f} for={@comment_changeset} action={~p"/comments"}>
   <.input type="hidden" field={f[:post_id]} value={@post.id} />
-  <.input field={f[:content]} type="text" label="Content" />
+  <.input field={f[:content]} type="text" label="Write a Comment" />
   <:actions>
     <.button>Comment</.button>
   </:actions>
 </.simple_form>
 
-<.list>
-  <:item :for={comment <- @post.comments} title="Comment"><%= comment.content %></:item>
-</.list>
-
+<.table id="posts" rows={@post.comments}>
+  <:col :let={comment} label="Comments">
+    <span id={"comment-content-#{comment.id}"}><%= comment.content %></span>
+    <.form id={"edit-comment-#{comment.id}"} :let={f} hidden for={%{}} method="put" as={:comment} action={~p"/comments/#{comment.id}"}>
+      <.input required field={f[:content]} type="text" />
+    </.form>
+  </:col>
+  <:action :let={comment}>
+    <.button phx-click={JS.toggle(to: "#edit-comment-#{comment.id}") |> JS.toggle(to: "#comment-content-#{comment.id}")}>
+      Edit
+    </.button>
+  </:action>
+  <:action :let={comment}>
+    <.link href={~p"/comments/#{comment}"} method="delete" data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>
 
 <.back navigate={~p"/posts"}>Back to posts</.back>

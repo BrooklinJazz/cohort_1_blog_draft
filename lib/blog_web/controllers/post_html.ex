@@ -1,5 +1,7 @@
 defmodule BlogWeb.PostHTML do
   use BlogWeb, :html
+  alias Blog.Comments
+  alias Blog.Comments.Comment
 
   embed_templates "post_html/*"
 

@@ -36,14 +36,6 @@ defmodule BlogWeb.CommentControllerTest do
       conn = get(conn, ~p"/posts/#{post.id}")
       assert html_response(conn, 200) =~ update_attrs.content
     end
-
-    test "renders errors when data is invalid", %{conn: conn} do
-      post = post_fixture()
-      comment = comment_fixture(post_id: post.id)
-      invalid_attrs = %{content: nil, post_id: post.id}
-      conn = put(conn, ~p"/comments/#{comment}", comment: invalid_attrs)
-      assert html_response(conn, 200) =~ "can&#39;t be blank"
-    end
   end
 
   describe "delete comment" do

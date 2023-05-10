@@ -1,6 +1,6 @@
 defmodule BlogWeb.CommentController do
   use BlogWeb, :controller
-  plug :put_view, BlogWeb.PostHTML
+  plug(:put_view, BlogWeb.PostHTML)
 
   alias Blog.Comments
   alias Blog.Comments.Comment
@@ -21,6 +21,7 @@ defmodule BlogWeb.CommentController do
 
   def update(conn, %{"id" => id, "comment" => comment_params}) do
     comment = Comments.get_comment!(id)
+
     case Comments.update_comment(comment, comment_params) do
       {:ok, comment} ->
         conn
@@ -29,7 +30,8 @@ defmodule BlogWeb.CommentController do
 
       {:error, %Ecto.Changeset{} = comment_changeset} ->
         post = Posts.get_post!(comment.post_id)
-        render(conn, :show, post: post, comment_changeset: comment_changeset)
+
+        render(conn, :show, post: post, comment_changeset: Comments.change_comment(%Comment{}))
     end
   end
 
