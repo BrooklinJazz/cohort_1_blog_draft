@@ -2,11 +2,13 @@ defmodule Blog.PostsTest do
   use Blog.DataCase
 
   alias Blog.Posts
+  alias Blog.Comments
 
   describe "posts" do
     alias Blog.Posts.Post
 
     import Blog.PostsFixtures
+    import Blog.CommentsFixtures
 
     @invalid_attrs %{content: nil, subtitle: nil, title: nil}
 
@@ -27,7 +29,7 @@ defmodule Blog.PostsTest do
 
     test "get_post!/1 returns the post with given id" do
       post = post_fixture()
-      assert Posts.get_post!(post.id) == post
+      assert Posts.get_post!(post.id) == Repo.preload(post, :comments)
     end
 
     test "create_post/1 with valid data creates a post" do
@@ -61,13 +63,22 @@ defmodule Blog.PostsTest do
     test "update_post/2 with invalid data returns error changeset" do
       post = post_fixture()
       assert {:error, %Ecto.Changeset{}} = Posts.update_post(post, @invalid_attrs)
-      assert post == Posts.get_post!(post.id)
+      assert Repo.preload(post, :comments) == Posts.get_post!(post.id)
     end
 
     test "delete_post/1 deletes the post" do
       post = post_fixture()
       assert {:ok, %Post{}} = Posts.delete_post(post)
       assert_raise Ecto.NoResultsError, fn -> Posts.get_post!(post.id) end
+    end
+
+    test "delete_post/1 deletes the post and associated comments" do
+      post = post_fixture()
+      comment = comment_fixture(post_id: post.id)
+      assert {:ok, %Post{}} = Posts.delete_post(post)
+
+      assert_raise Ecto.NoResultsError, fn -> Posts.get_post!(post.id) end
+      assert_raise Ecto.NoResultsError, fn -> Comments.get_comment!(comment.id) end
     end
 
     test "change_post/1 returns a post changeset" do

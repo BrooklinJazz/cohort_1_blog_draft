@@ -14,4 +14,17 @@
   <:item title="Content"><%= @post.content %></:item>
 </.list>
 
+<.simple_form :let={f} for={@comment_changeset} action={~p"/comments"}>
+  <.input type="hidden" field={f[:post_id]} value={@post.id} />
+  <.input field={f[:content]} type="text" label="Content" />
+  <:actions>
+    <.button>Comment</.button>
+  </:actions>
+</.simple_form>
+
+<.list>
+  <:item :for={comment <- @post.comments} title="Comment"><%= comment.content %></:item>
+</.list>
+
+
 <.back navigate={~p"/posts"}>Back to posts</.back>

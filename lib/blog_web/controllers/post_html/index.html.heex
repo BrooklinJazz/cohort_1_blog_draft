@@ -7,7 +7,7 @@
   </:actions>
 </.header>
 
-<.simple_form :let={f} for={%{}} method={"get"} action={~p"/posts"}>
+<.simple_form :let={f} for={%{}} method="get" action={~p"/posts"}>
   <.input field={f[:title]} type="text" label="Search Posts" />
   <:actions>
     <.button>Search</.button>
