@@ -10,11 +10,25 @@ defmodule Blog.PostsTest do
     import Blog.PostsFixtures
     import Blog.CommentsFixtures
 
-    @invalid_attrs %{content: nil, subtitle: nil, title: nil}
+    @invalid_attrs %{content: nil, title: nil}
 
-    test "list_posts/0 returns all posts" do
+    test "list_posts/1 with no filter returns all posts" do
       post = post_fixture()
       assert Posts.list_posts() == [post]
+    end
+
+    test "list_posts/1 ignores non visible posts" do
+      post = post_fixture(visible: false)
+      assert Posts.list_posts() == []
+      assert Posts.list_posts(post.title) == []
+    end
+
+    test "list_posts/1 ignores future posts and sorts posts by date" do
+      past_post = post_fixture(title: "some title1", published_on: DateTime.utc_now() |> DateTime.add(-1, :day))
+      present_post = post_fixture(title: "some title2", published_on: DateTime.utc_now())
+      future_post = post_fixture(title: "some title3", published_on: DateTime.utc_now() |> DateTime.add(1, :day))
+      assert Posts.list_posts() == [present_post, past_post]
+      assert Posts.list_posts("some title") == [present_post, past_post]
     end
 
     test "list_posts/1 filters posts by title" do
@@ -33,12 +47,20 @@ defmodule Blog.PostsTest do
     end
 
     test "create_post/1 with valid data creates a post" do
-      valid_attrs = %{content: "some content", subtitle: "some subtitle", title: "some title"}
+      now = DateTime.utc_now()
+      valid_attrs = %{content: "some content", title: "some title", visible: true, published_on: now}
 
       assert {:ok, %Post{} = post} = Posts.create_post(valid_attrs)
       assert post.content == "some content"
-      assert post.subtitle == "some subtitle"
       assert post.title == "some title"
+      assert post.visible
+      # convert to unix to avoid issues with :utc_datetime vs :utc_datetime_usec
+      assert DateTime.to_unix(post.published_on) == DateTime.to_unix(now)
+    end
+
+    test "create_post/1 post titles must be unique" do
+      post = post_fixture()
+      assert {:error, %Ecto.Changeset{}} = Posts.create_post(%{content: "some content", title: post.title})
     end
 
     test "create_post/1 with invalid data returns error changeset" do
@@ -50,13 +72,11 @@ defmodule Blog.PostsTest do
 
       update_attrs = %{
         content: "some updated content",
-        subtitle: "some updated subtitle",
         title: "some updated title"
       }
 
       assert {:ok, %Post{} = post} = Posts.update_post(post, update_attrs)
       assert post.content == "some updated content"
-      assert post.subtitle == "some updated subtitle"
       assert post.title == "some updated title"
     end
 

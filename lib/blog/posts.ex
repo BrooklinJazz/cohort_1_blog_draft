@@ -17,16 +17,20 @@ defmodule Blog.Posts do
       [%Post{}, ...]
 
   """
-  def list_posts(title) do
+  def list_posts(title \\ "") do
     search = "%#{title}%"
 
-    Post
-    |> where([p], ilike(p.title, ^search))
-    |> Repo.all()
-  end
+    today = DateTime.utc_now()
 
-  def list_posts do
-    Repo.all(Post)
+    query =
+      from(p in Post,
+        where: ilike(p.title, ^search),
+        where: p.visible,
+        where: p.published_on <= type(^today, :utc_datetime),
+        order_by: [desc: p.published_on]
+      )
+
+    Repo.all(query)
   end
 
   @doc """

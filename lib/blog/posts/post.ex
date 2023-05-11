@@ -4,8 +4,9 @@ defmodule Blog.Posts.Post do
 
   schema "posts" do
     field :content, :string
-    field :subtitle, :string
     field :title, :string
+    field :visible, :boolean, default: true
+    field :published_on, :utc_datetime
     has_many :comments, Blog.Comments.Comment
 
     timestamps()
@@ -14,7 +15,8 @@ defmodule Blog.Posts.Post do
   @doc false
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:title, :subtitle, :content])
-    |> validate_required([:title, :subtitle, :content])
+    |> cast(attrs, [:title, :content, :visible, :published_on])
+    |> validate_required([:title, :content, :visible])
+    |> unique_constraint(:title)
   end
 end

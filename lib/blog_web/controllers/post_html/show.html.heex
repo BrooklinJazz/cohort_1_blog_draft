@@ -10,8 +10,9 @@
 
 <.list>
   <:item title="Title"><%= @post.title %></:item>
-  <:item title="Subtitle"><%= @post.subtitle %></:item>
   <:item title="Content"><%= @post.content %></:item>
+  <:item title="Publish On"><%= Calendar.strftime(@post.published_on, "%c") %></:item>
+  <:item title="Visible"><%= @post.visible %></:item>
 </.list>
 
 <.simple_form :let={f} for={@comment_changeset} action={~p"/comments"}>
