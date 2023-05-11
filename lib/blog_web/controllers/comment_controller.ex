@@ -1,10 +1,11 @@
 defmodule BlogWeb.CommentController do
   use BlogWeb, :controller
-  plug(:put_view, BlogWeb.PostHTML)
 
   alias Blog.Comments
-  alias Blog.Comments.Comment
   alias Blog.Posts
+
+  plug :put_view, BlogWeb.PostHTML
+  plug :require_user_owns_comment when action in [:update, :delete]
 
   def create(conn, %{"comment" => comment_params}) do
     case Comments.create_comment(comment_params) do
@@ -28,10 +29,10 @@ defmodule BlogWeb.CommentController do
         |> put_flash(:info, "Comment updated successfully.")
         |> redirect(to: ~p"/posts/#{comment.post_id}")
 
-      {:error, %Ecto.Changeset{} = comment_changeset} ->
-        post = Posts.get_post!(comment.post_id)
-
-        render(conn, :show, post: post, comment_changeset: Comments.change_comment(%Comment{}))
+      {:error, %Ecto.Changeset{}} ->
+        conn
+        |> put_flash(:info, "Something went wrong, comment could not be created.")
+        |> redirect(to: ~p"/posts/#{comment.post_id}")
     end
   end
 
@@ -42,5 +43,18 @@ defmodule BlogWeb.CommentController do
     conn
     |> put_flash(:info, "Comment deleted successfully.")
     |> redirect(to: ~p"/posts/#{comment.post_id}")
+  end
+
+  defp require_user_owns_comment(conn, _) do
+    comment = Comments.get_comment!(conn.params["id"])
+
+    if comment.user_id != conn.assigns.current_user.id do
+      conn
+      |> put_flash(:error, "You can only edit or delete your own comments.")
+      |> redirect(to: ~p"/posts/#{comment.post_id}")
+      |> halt()
+    else
+      conn
+    end
   end
 end

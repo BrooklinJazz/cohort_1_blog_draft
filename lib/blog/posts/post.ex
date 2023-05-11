@@ -8,6 +8,7 @@ defmodule Blog.Posts.Post do
     field :visible, :boolean, default: true
     field :published_on, :utc_datetime
     has_many :comments, Blog.Comments.Comment
+    belongs_to :user, Blog.Accounts.User
 
     timestamps()
   end
@@ -15,8 +16,9 @@ defmodule Blog.Posts.Post do
   @doc false
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:title, :content, :visible, :published_on])
-    |> validate_required([:title, :content, :visible])
+    |> cast(attrs, [:title, :content, :visible, :published_on, :user_id])
+    |> validate_required([:title, :content, :visible, :user_id])
     |> unique_constraint(:title)
+    |> foreign_key_constraint(:user_id)
   end
 end

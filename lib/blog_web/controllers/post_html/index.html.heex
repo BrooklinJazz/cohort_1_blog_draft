@@ -1,9 +1,11 @@
 <.header>
   Listing Posts
   <:actions>
-    <.link href={~p"/posts/new"}>
-      <.button>New Post</.button>
-    </.link>
+    <%= if assigns[:current_user] do %>
+      <.link href={~p"/posts/new"}>
+        <.button>New Post</.button>
+      </.link>
+    <% end %>
   </:actions>
 </.header>
 
@@ -22,11 +24,15 @@
     <div class="sr-only">
       <.link navigate={~p"/posts/#{post}"}>Show</.link>
     </div>
-    <.link navigate={~p"/posts/#{post}/edit"}>Edit</.link>
+    <%= if assigns[:current_user] && post.user_id == assigns[:current_user].id do %>
+      <.link navigate={~p"/posts/#{post}/edit"}>Edit</.link>
+    <% end %>
   </:action>
   <:action :let={post}>
-    <.link href={~p"/posts/#{post}"} method="delete" data-confirm="Are you sure?">
-      Delete
-    </.link>
+    <%= if assigns[:current_user] && post.user_id == assigns[:current_user].id do %>
+      <.link href={~p"/posts/#{post}"} method="delete" data-confirm="Are you sure?">
+        Delete
+      </.link>
+    <% end %>
   </:action>
 </.table>
